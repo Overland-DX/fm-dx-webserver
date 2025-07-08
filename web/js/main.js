@@ -288,31 +288,28 @@ function getServerTime() {
         url: "./server_time",
         dataType: "json",
         success: function(data) {
-            const serverTimeUtc = data.serverTime;
-            
+            const serverTimeIso = data.serverTime;
+
+            const serverDate = new Date(serverTimeIso);
+
             const options = {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: false
+                hour12: false,
             };
-            
-            const serverOptions = {
-                ...options,
-                timeZone: 'Etc/UTC'
-            };
-            
-            const formattedServerTime = new Date(serverTimeUtc).toLocaleString(navigator.language ? navigator.language : 'en-US', serverOptions);
-            
-            $("#server-time").text(formattedServerTime);        
+
+            const localTime = serverDate.toLocaleString(navigator.language || 'en-US', options);
+
+            $("#server-time").text(localTime);        
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error fetching server time:", errorThrown);
         }
     });
-}  
+} 
 
 function sendPingRequest() {
     const timeoutDuration = 5000;
