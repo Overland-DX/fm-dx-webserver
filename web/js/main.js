@@ -298,7 +298,7 @@ function getServerTime() {
                 day: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
-                hour12: false,
+                hour12: false
             };
 
             const localTime = serverDate.toLocaleString(navigator.language || 'en-US', options);
