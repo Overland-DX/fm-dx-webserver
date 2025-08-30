@@ -287,7 +287,6 @@ function getServerTime() {
     $.ajax({
         url: "./server_time",
         dataType: "json",
-
         success: function(data) {
             try {
                 const serverTimeIso = data.serverTime;
@@ -295,6 +294,11 @@ function getServerTime() {
                 if (typeof serverTimeIso === 'string' && serverTimeIso.includes('T')) {
                     
                     const serverDate = new Date(serverTimeIso);
+
+                    if (isNaN(serverDate.getTime())) {
+                        throw new Error("Server time string could not be parsed into a valid date.");
+                    }
+
                     const dateOptions = {
                         year: 'numeric',
                         month: 'short',
@@ -309,30 +313,16 @@ function getServerTime() {
                     $("#server-time").text(finalDisplayTime);
 
                 } else {
-                    throw new Error("Invalid or missing 'T' in serverTime string.");
+                    throw new Error("Received server time is not in a valid string format.");
                 }
-
             } catch (error) {
-                console.error("Error parsing server time string:", error);
-                console.warn("Falling back to safe time display (client's local time).");
-
-                const serverTimeIso = data.serverTime;
-                const serverDate = new Date(serverTimeIso);
-                const options = {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                };
-                const localTime = serverDate.toLocaleString(navigator.language || 'en-US', options);
-                $("#server-time").text(localTime);
+                console.error("Could not correctly parse or display server time:", error);
+                $("#server-time").text("--:--");
             }
-        }, 
-
+        },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error fetching server time:", errorThrown);
+            $("#server-time").text("--:--");
         }
     });
 }
