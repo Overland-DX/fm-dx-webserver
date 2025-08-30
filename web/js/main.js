@@ -287,29 +287,55 @@ function getServerTime() {
     $.ajax({
         url: "./server_time",
         dataType: "json",
+
         success: function(data) {
-            const serverTimeIso = data.serverTime;
+            try {
+                const serverTimeIso = data.serverTime;
 
-            const serverDate = new Date(serverTimeIso);
+                if (typeof serverTimeIso === 'string' && serverTimeIso.includes('T')) {
+                    
+                    const serverDate = new Date(serverTimeIso);
+                    const dateOptions = {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    };
+                    const formattedDate = serverDate.toLocaleDateString(navigator.language || 'en-US', dateOptions);
 
-            const options = {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            };
+                    const timeString = serverTimeIso.split('T')[1].substring(0, 5);
 
-            const localTime = serverDate.toLocaleString(navigator.language || 'en-US', options);
+                    const finalDisplayTime = `${formattedDate}, ${timeString}`;
 
-            $("#server-time").text(localTime);        
-        },
+                    $("#server-time").text(finalDisplayTime);
+
+                } else {
+                    throw new Error("Invalid or missing 'T' in serverTime string.");
+                }
+
+            } catch (error) {
+                console.error("Error parsing server time string:", error);
+                console.warn("Falling back to safe time display (client's local time).");
+
+                const serverTimeIso = data.serverTime;
+                const serverDate = new Date(serverTimeIso);
+                const options = {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                };
+                const localTime = serverDate.toLocaleString(navigator.language || 'en-US', options);
+                $("#server-time").text(localTime);
+            }
+        }, 
+
         error: function(jqXHR, textStatus, errorThrown) {
             console.error("Error fetching server time:", errorThrown);
         }
     });
-} 
+}
 
 function sendPingRequest() {
     const timeoutDuration = 5000;
